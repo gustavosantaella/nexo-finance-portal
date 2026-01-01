@@ -1,0 +1,16 @@
+@import 'tailwindcss';
+
+
+@theme {
+  --color-nexo-dark: #0a0a0a;
+  --color-nexo-card: #1a1a1a;
+  --color-nexo-accent: #6366f1;
+  --color-nexo-purple: #8b5cf6;
+}
+
+body {
+  background-color: var(--color-nexo-dark);
+  color: #ffffff;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
