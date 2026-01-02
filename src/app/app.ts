@@ -1,4 +1,5 @@
 import { Component, signal } from '@angular/core';
+import { inject } from '@vercel/analytics';
 import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './components/header/header';
 import { FooterComponent } from './components/footer/footer';
@@ -10,4 +11,8 @@ import { FooterComponent } from './components/footer/footer';
 })
 export class AppComponent {
   protected readonly title = signal('nexo-finance-portal');
+
+  constructor() {
+    inject();
+  }
 }
