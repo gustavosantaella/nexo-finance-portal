@@ -28,7 +28,7 @@ export interface ApiResponse<T> {
     providedIn: 'root'
 })
 export class AdminService {
-    private apiUrl = 'http://localhost:8000/admin'; // TODO: Use environment config
+    private apiUrl = 'https://sigefip-backend.vercel.app/admin'; // TODO: Use environment config
 
     constructor(private http: HttpClient) { }
 
