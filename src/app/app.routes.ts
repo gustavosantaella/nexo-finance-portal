@@ -7,7 +7,7 @@ import { SupportComponent } from './components/support/support.component';
 import { FaqComponent } from './components/faq/faq.component';
 import { AdminDashboardComponent, AdminHomeComponent } from './modules/admin-dashboard/admin-dashboard.component';
 import { UserManagementComponent } from './modules/admin-dashboard/user-management/user-management.component';
-
+import { adminGuard } from './guards/admin.guard';
 import { MainLayoutComponent } from './shared/layouts/main-layout.component';
 
 export const routes: Routes = [
@@ -25,6 +25,7 @@ export const routes: Routes = [
   {
     path: 'admin',
     component: AdminDashboardComponent,
+    canActivate: [adminGuard],
     children: [
       { path: '', component: AdminHomeComponent },
       { path: 'users', component: UserManagementComponent }

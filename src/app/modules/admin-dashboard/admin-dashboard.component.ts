@@ -10,25 +10,50 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <div class="min-h-screen bg-slate-900 text-slate-100 flex">
+    <div class="min-h-screen bg-[#0f172a] text-slate-200 flex font-sans">
       <!-- Sidebar -->
-      <aside class="w-64 bg-slate-800 border-r border-slate-700 p-6 flex flex-col gap-6">
-        <h1 class="text-2xl font-bold text-indigo-400">Nexo Admin</h1>
+      <aside class="w-72 bg-slate-800/40 backdrop-blur-xl border-r border-slate-700/50 p-8 flex flex-col gap-10 shadow-2xl relative z-10 overflow-hidden">
+        <!-- Glow effect in background -->
+        <div class="absolute -top-24 -left-24 w-48 h-48 bg-indigo-500/10 blur-[100px]"></div>
+        
+        <div class="flex items-center gap-3 px-2">
+          <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          </div>
+          <h1 class="text-2xl font-black tracking-tight text-white italic">NEXO <span class="text-indigo-500 not-italic">ADM</span></h1>
+        </div>
+
         <nav class="flex flex-col gap-2">
-          <a routerLink="/admin" routerLinkActive="bg-indigo-600" [routerLinkActiveOptions]="{exact: true}" class="px-4 py-2 rounded-lg hover:bg-slate-700 transition">Dashboard</a>
-          <a routerLink="/admin/users" routerLinkActive="bg-indigo-600" class="px-4 py-2 rounded-lg hover:bg-slate-700 transition">Usuarios</a>
+          <p class="text-[10px] uppercase tracking-widest text-slate-500 font-bold px-4 mb-2">Principal</p>
+          <a routerLink="/admin" routerLinkActive="bg-indigo-600/10 text-indigo-400 border-indigo-500/50" [routerLinkActiveOptions]="{exact: true}" 
+             class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-700/40 transition-all border border-transparent group">
+            <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+            <span class="font-semibold text-sm">Dashboard</span>
+          </a>
+          <a routerLink="/admin/users" routerLinkActive="bg-indigo-600/10 text-indigo-400 border-indigo-500/50" 
+             class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-700/40 transition-all border border-transparent group">
+            <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            <span class="font-semibold text-sm">Usuarios</span>
+          </a>
         </nav>
         
-        <div class="mt-auto pt-6 border-t border-slate-700">
-          <button (click)="logout()" class="w-full px-4 py-2 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white transition flex items-center justify-center gap-2 font-semibold">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+        <div class="mt-auto px-2">
+          <div class="p-4 bg-slate-900/40 rounded-2xl border border-slate-700/50 mb-6 flex items-center gap-3">
+             <div class="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 font-bold border border-indigo-500/30">A</div>
+             <div class="flex flex-col overflow-hidden">
+               <span class="text-xs font-bold text-white truncate">Administrator</span>
+               <span class="text-[10px] text-slate-500 truncate italic">admin@nexo.finance</span>
+             </div>
+          </div>
+          <button (click)="logout()" class="w-full px-4 py-3 rounded-xl bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center gap-3 font-bold text-sm border border-rose-500/20">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
             Cerrar Sesión
           </button>
         </div>
       </aside>
 
       <!-- Main Content -->
-      <main class="flex-1 p-8 overflow-y-auto">
+      <main class="flex-1 p-10 overflow-y-auto bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-slate-950">
         <router-outlet></router-outlet>
       </main>
     </div>
@@ -48,24 +73,86 @@ export class AdminDashboardComponent {
   standalone: true,
   imports: [CommonModule, LoadingSpinnerComponent],
   template: `
-    <div class="flex flex-col gap-8">
-      <header>
-        <h2 class="text-3xl font-bold">Panel de Control</h2>
-        <p class="text-slate-400">Resumen general del sistema</p>
+    <div class="flex flex-col gap-10 animate-in fade-in duration-700">
+      <header class="flex justify-between items-end">
+        <div class="flex flex-col gap-1">
+          <h2 class="text-4xl font-black text-white tracking-tight">Panel de Control</h2>
+          <p class="text-slate-400 font-medium">Resumen general y métricas del sistema</p>
+        </div>
+        <div class="px-4 py-2 bg-indigo-500/10 text-indigo-400 rounded-xl border border-indigo-500/20 text-xs font-bold uppercase tracking-widest">
+          Actualizado ahora
+        </div>
       </header>
 
       <app-loading-spinner *ngIf="isLoading()" message="Cargando estadísticas..."></app-loading-spinner>
 
-      <div *ngIf="!isLoading()" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 hover:border-indigo-500/50 transition-colors group">
-          <p class="text-slate-400 text-sm font-medium uppercase tracking-wider group-hover:text-indigo-400 transition-colors">Total Usuarios</p>
-          <p class="text-4xl font-bold mt-2">{{ stats()?.total_users || 0 }}</p>
+      <div *ngIf="!isLoading()" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Users Card -->
+        <div class="relative group">
+          <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div class="relative bg-slate-800/40 backdrop-blur-xl p-8 rounded-[2rem] border border-slate-700/50 hover:border-indigo-500/50 transition-all duration-300 shadow-xl overflow-hidden">
+            <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl"></div>
+            <div class="flex justify-between items-start mb-4">
+              <div class="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+              </div>
+              <span class="text-[10px] font-black text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-lg border border-emerald-400/20 uppercase tracking-tighter cursor-default">+12% Mes</span>
+            </div>
+            <p class="text-slate-400 text-sm font-bold uppercase tracking-widest">Total Usuarios</p>
+            <p class="text-5xl font-black mt-2 text-white">{{ stats()?.total_users || 0 }}</p>
+          </div>
         </div>
-        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 hover:border-indigo-500/50 transition-colors group">
-          <p class="text-slate-400 text-sm font-medium uppercase tracking-wider group-hover:text-indigo-400 transition-colors">Administradores</p>
-          <p class="text-4xl font-bold mt-2 text-indigo-400">{{ stats()?.total_admins || 0 }}</p>
+
+        <!-- Admins Card -->
+        <div class="relative group">
+          <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-blue-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div class="relative bg-slate-800/40 backdrop-blur-xl p-8 rounded-[2rem] border border-slate-700/50 hover:border-indigo-500/50 transition-all duration-300 shadow-xl overflow-hidden">
+            <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-indigo-400/5 rounded-full blur-2xl"></div>
+            <div class="flex justify-between items-start mb-4">
+              <div class="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+              </div>
+            </div>
+            <p class="text-slate-400 text-sm font-bold uppercase tracking-widest">Administradores</p>
+            <p class="text-5xl font-black mt-2 text-indigo-400">{{ stats()?.total_admins || 0 }}</p>
+          </div>
+        </div>
+
+        <!-- System Health (Mock) -->
+        <div class="relative group">
+          <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div class="relative bg-slate-800/40 backdrop-blur-xl p-8 rounded-[2rem] border border-slate-700/50 hover:border-emerald-500/50 transition-all duration-300 shadow-xl overflow-hidden">
+            <div class="flex justify-between items-start mb-4">
+              <div class="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+              </div>
+              <span class="text-[10px] font-black text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-lg border border-emerald-400/20 uppercase tracking-tighter uppercase">Estable</span>
+            </div>
+            <p class="text-slate-400 text-sm font-bold uppercase tracking-widest">Sistema</p>
+            <p class="text-4xl font-black mt-2 text-white">Online</p>
+          </div>
         </div>
       </div>
+
+      <!-- Recent Activity Teaser -->
+      <section *ngIf="!isLoading()" class="bg-indigo-600/5 rounded-[2.5rem] border border-indigo-500/10 p-10 mt-4 relative overflow-hidden group">
+        <div class="absolute -right-20 -top-20 w-64 h-64 bg-indigo-500/10 blur-[100px] group-hover:bg-indigo-500/20 transition-all"></div>
+        <div class="relative">
+          <h3 class="text-xl font-black text-white mb-6">Actividad Reciente</h3>
+          <div class="flex flex-col gap-4">
+             <div class="flex items-center gap-4 group/item cursor-pointer">
+               <div class="w-2 h-2 rounded-full bg-indigo-500 group-hover/item:scale-150 transition-transform"></div>
+               <p class="text-slate-300 text-sm"><span class="font-bold text-white italic">Ligmar Castro</span> se ha registrado en el sistema.</p>
+               <span class="ml-auto text-[10px] font-bold text-slate-500 uppercase">Hace 2m</span>
+             </div>
+             <div class="flex items-center gap-4 group/item cursor-pointer">
+               <div class="w-2 h-2 rounded-full bg-emerald-500 group-hover/item:scale-150 transition-transform"></div>
+               <p class="text-slate-300 text-sm"><span class="font-bold text-white italic">Administrator</span> verificó a <span class="text-emerald-400">test@user.com</span>.</p>
+               <span class="ml-auto text-[10px] font-bold text-slate-500 uppercase">Hace 1h</span>
+             </div>
+          </div>
+        </div>
+      </section>
     </div>
   `
 })

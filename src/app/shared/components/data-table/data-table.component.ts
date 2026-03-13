@@ -12,11 +12,7 @@ export interface TableColumn {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
-      <!-- Debug info (visible for now) -->
-      <div class="text-[10px] text-amber-400/50 p-2 border-b border-slate-700 bg-slate-900/50">
-        Debug: Registros: {{ tableData.length }} | Columnas: {{ columns.length }} | Templates: {{ columnTemplates ? 'OK' : 'NULL' }}
-      </div>
+    <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 overflow-hidden shadow-xl transition-all duration-300">
       <table class="w-full text-left border-collapse">
         <thead class="bg-slate-700/50 text-slate-400 text-sm uppercase tracking-wider">
           <tr>
@@ -28,8 +24,8 @@ export interface TableColumn {
             </th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-700">
-          <tr *ngFor="let item of tableData" class="hover:bg-slate-700/30 transition">
+        <tbody class="divide-y divide-slate-700/50">
+          <tr *ngFor="let item of tableData" class="hover:bg-indigo-500/5 transition-colors group">
             <td *ngFor="let col of columns" class="px-6 py-4">
               <ng-container *ngIf="!columnTemplates[col.key]; else customCell">
                 {{ item[col.key] }}
