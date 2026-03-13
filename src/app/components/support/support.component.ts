@@ -18,7 +18,7 @@ import { RouterModule } from '@angular/router';
           <div class="bg-white/5 border border-white/10 rounded-2xl p-6">
             <h3 class="text-xl font-semibold text-white mb-2">Correo Electrónico</h3>
             <p class="text-gray-400 mb-4">Envíanos un correo y te responderemos lo antes posible.</p>
-            <a href="mailto:support@nexofinance.app" class="text-indigo-400 hover:text-indigo-300 font-medium">support&#64;nexofinance.app</a>
+            <a href="mailto:softlink.ve@gmail.com" class="text-indigo-400 hover:text-indigo-300 font-medium">softlink.ve&#64;gmail.com</a>
           </div>
 
           <div class="bg-white/5 border border-white/10 rounded-2xl p-6">
