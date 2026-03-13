@@ -108,6 +108,31 @@ export class FaqComponent {
             question: '¿Cómo calculan las tasas de cambio de monedas (como el BCV)?',
             answer: 'Nexo Finance consulta de forma automática y solo de forma referencial diversas APIs públicas u oficiales de terceros como las del Banco Central de Venezuela, CryptoYa, entre otras. Las tasas son estimaciones y no nos hacemos responsables por las variaciones ni de la disponibilidad continua de dichas APIs de terceros.',
             isOpen: false
+        },
+        {
+            question: '¿La IA de Nexo Finance me da consejos financieros profesionales?',
+            answer: 'Nexo Finance integra Inteligencia Artificial que puede ofrecerle consejos, recomendaciones y orientación financiera personalizada basada en sus datos. Sin embargo, estas sugerencias tienen carácter estrictamente informativo y orientativo. No constituyen asesoramiento financiero, contable, fiscal ni legal profesional certificado. Usted es el único y exclusivo responsable de evaluar, validar y tomar sus propias decisiones financieras.',
+            isOpen: false
+        },
+        {
+            question: '¿Puedo eliminar mi cuenta y todos mis datos?',
+            answer: 'Sí. Desde la sección de Configuración dentro de la aplicación, usted puede solicitar la eliminación permanente de su cuenta. Una vez confirmada, todos sus datos personales y financieros serán purgados de nuestros servidores de forma definitiva e irrecuperable.',
+            isOpen: false
+        },
+        {
+            question: '¿Qué incluye la suscripción Premium?',
+            answer: 'La suscripción Premium desbloquea funcionalidades avanzadas como el análisis financiero asistido por IA (chat inteligente, predicciones y recomendaciones), la lectura y digitalización automática de recibos y facturas mediante OCR, y otras herramientas de productividad avanzada. Las funcionalidades básicas de registro y gestión financiera permanecen disponibles en el plan gratuito.',
+            isOpen: false
+        },
+        {
+            question: '¿Quién es responsable de la exactitud de mis registros financieros?',
+            answer: 'Usted. Nexo Finance es una herramienta de registro y análisis; la exactitud de los datos depende enteramente de la información que usted introduzca. Las proyecciones, reportes y recomendaciones generadas (incluidas las de IA) son orientativas y referenciales, y no sustituyen el criterio propio ni la consulta con un profesional financiero.',
+            isOpen: false
+        },
+        {
+            question: '¿Mis datos se sincronizan entre dispositivos?',
+            answer: 'Sí. Sus datos estructurados (transacciones, presupuestos, cuentas y configuraciones) se sincronizan de forma cifrada y segura a través de la infraestructura cloud de Supabase. Esto le permite acceder a su información desde cualquier dispositivo donde inicie sesión con su cuenta de Nexo Finance.',
+            isOpen: false
         }
     ]);
 
