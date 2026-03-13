@@ -76,13 +76,20 @@ export class AdminHomeComponent implements OnInit {
   constructor(private adminService: AdminService) { }
 
   ngOnInit() {
+    console.log('AdminHome: Iniciando carga de estadísticas...');
     this.isLoading.set(true);
     this.adminService.getStats().subscribe({
       next: (res) => {
-        if (res.success) this.stats.set(res.data);
+        console.log('AdminHome: Estadísticas recibidas:', res);
+        if (res.success) {
+          this.stats.set(res.data);
+        }
         this.isLoading.set(false);
       },
-      error: () => this.isLoading.set(false)
+      error: (err) => {
+        console.error('AdminHome: Error cargando estadísticas:', err);
+        this.isLoading.set(false);
+      }
     });
   }
 }
