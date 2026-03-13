@@ -6,8 +6,9 @@ import { FooterComponent } from './components/footer/footer';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, HeaderComponent, FooterComponent],
-  templateUrl: './app.component.html',
+  standalone: true,
+  imports: [RouterOutlet],
+  template: `<router-outlet></router-outlet>`,
 })
 export class AppComponent implements OnInit {
   protected readonly title = signal('nexo-finance-portal');
