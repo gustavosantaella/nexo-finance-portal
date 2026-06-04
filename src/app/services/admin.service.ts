@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface UserStats {
     total_users: number;
@@ -28,7 +29,7 @@ export interface ApiResponse<T> {
     providedIn: 'root'
 })
 export class AdminService {
-    private apiUrl = 'https://sigefip-backend.vercel.app/admin'; // TODO: Use environment config
+    private apiUrl = `${environment.apiUrl}/admin`;
 
     constructor(private http: HttpClient) { }
 
