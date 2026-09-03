@@ -1,16 +1,18 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { TransfersService, Transfer, TransferStats } from '../../../services/transfers.service';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-transfers-view',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   template: `
     <div class="flex flex-col gap-8 animate-in fade-in duration-700">
       <header>
         <h2 class="text-4xl font-black text-white tracking-tight">Transferencias</h2>
-        <p class="text-slate-400 font-medium">Historial global de transferencias entre cuentas</p>
+        <p class="text-slate-400 font-medium">Tus transferencias entre cuentas</p>
       </header>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4" *ngIf="stats()">
@@ -35,7 +37,6 @@ import { TransfersService, Transfer, TransferStats } from '../../../services/tra
           <table class="w-full">
             <thead>
               <tr class="text-left text-xs font-bold uppercase tracking-widest text-slate-500 border-b border-slate-700/50">
-                <th class="px-6 py-4">Usuario</th>
                 <th class="px-6 py-4">Monto</th>
                 <th class="px-6 py-4">Comisión</th>
                 <th class="px-6 py-4">Nota</th>
@@ -44,7 +45,6 @@ import { TransfersService, Transfer, TransferStats } from '../../../services/tra
             </thead>
             <tbody>
               <tr *ngFor="let t of transfers()" class="border-b border-slate-700/30 hover:bg-slate-700/20 transition-colors">
-                <td class="px-6 py-4 text-sm text-slate-400">{{ t.user_email }}</td>
                 <td class="px-6 py-4 text-sm font-bold text-white">{{ t.amount | number:'1.2-2' }}</td>
                 <td class="px-6 py-4 text-sm text-amber-400">{{ t.commission_amount || 0 | number:'1.2-2' }}</td>
                 <td class="px-6 py-4 text-sm text-slate-300">{{ t.note || '—' }}</td>
@@ -62,12 +62,23 @@ export class TransfersViewComponent implements OnInit {
   stats = signal<TransferStats | null>(null);
   isLoading = signal(true);
 
-  constructor(private svc: TransfersService) {}
+  constructor(private svc: TransfersService, private auth: AuthService) {}
 
   ngOnInit() {
-    this.svc.getStats().subscribe({ next: (r) => { if (r.success) this.stats.set(r.data); } });
-    this.svc.getAll().subscribe({
-      next: (r) => { if (r.success) this.transfers.set(r.data); this.isLoading.set(false); },
+    const uid = this.auth.userId();
+    if (!uid) { this.isLoading.set(false); return; }
+    this.svc.getByUser(uid).subscribe({
+      next: (r) => {
+        if (!r.success) { this.isLoading.set(false); return; }
+        let volume = 0, commissions = 0;
+        for (const t of r.data) {
+          volume += Number(t.amount) || 0;
+          commissions += Number(t.commission_amount) || 0;
+        }
+        this.stats.set({ total_transfers: r.data.length, total_volume: volume, total_commissions: commissions });
+        this.transfers.set(r.data);
+        this.isLoading.set(false);
+      },
       error: () => this.isLoading.set(false)
     });
   }

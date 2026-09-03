@@ -1,17 +1,19 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { AccountsService, Account, AccountStats } from '../../../services/accounts.service';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-accounts-view',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   template: `
     <div class="flex flex-col gap-8 animate-in fade-in duration-700">
       <header class="flex justify-between items-end">
         <div class="flex flex-col gap-1">
           <h2 class="text-4xl font-black text-white tracking-tight">Cuentas</h2>
-          <p class="text-slate-400 font-medium">Todas las cuentas financieras de los usuarios</p>
+          <p class="text-slate-400 font-medium">Tus cuentas financieras</p>
         </div>
         <div class="px-4 py-2 bg-indigo-500/10 text-indigo-400 rounded-xl border border-indigo-500/20 text-xs font-bold uppercase tracking-widest">
           {{ accounts().length }} cuentas
@@ -44,7 +46,6 @@ import { AccountsService, Account, AccountStats } from '../../../services/accoun
           <table class="w-full">
             <thead>
               <tr class="text-left text-xs font-bold uppercase tracking-widest text-slate-500 border-b border-slate-700/50">
-                <th class="px-6 py-4">Usuario</th>
                 <th class="px-6 py-4">Nombre</th>
                 <th class="px-6 py-4">Moneda</th>
                 <th class="px-6 py-4">Balance</th>
@@ -52,7 +53,6 @@ import { AccountsService, Account, AccountStats } from '../../../services/accoun
             </thead>
             <tbody>
               <tr *ngFor="let acc of accounts()" class="border-b border-slate-700/30 hover:bg-slate-700/20 transition-colors">
-                <td class="px-6 py-4 text-sm text-slate-400">{{ acc.user_email }}</td>
                 <td class="px-6 py-4 text-sm font-bold text-white">{{ acc.name }}</td>
                 <td class="px-6 py-4 text-sm text-slate-300">{{ acc.currency }}</td>
                 <td class="px-6 py-4 text-sm font-bold" [class]="acc.balance >= 0 ? 'text-emerald-400' : 'text-rose-400'">
@@ -71,18 +71,29 @@ export class AccountsViewComponent implements OnInit {
   stats = signal<AccountStats | null>(null);
   isLoading = signal(true);
 
+  constructor(private svc: AccountsService, private auth: AuthService) {}
+
   balanceEntries(): { key: string; value: number }[] {
     const s = this.stats();
     if (!s) return [];
     return Object.entries(s.balance_by_currency).map(([key, value]) => ({ key, value }));
   }
 
-  constructor(private svc: AccountsService) {}
-
   ngOnInit() {
-    this.svc.getStats().subscribe({ next: (r) => { if (r.success) this.stats.set(r.data); } });
-    this.svc.getAll().subscribe({
-      next: (r) => { if (r.success) this.accounts.set(r.data); this.isLoading.set(false); },
+    const uid = this.auth.userId();
+    if (!uid) { this.isLoading.set(false); return; }
+    this.svc.getByUser(uid).subscribe({
+      next: (r) => {
+        if (!r.success) { this.isLoading.set(false); return; }
+        const by: Record<string, number> = {};
+        for (const a of r.data) {
+          const c = a.currency || 'USD';
+          by[c] = (by[c] || 0) + (Number(a.balance) || 0);
+        }
+        this.stats.set({ total_accounts: r.data.length, balance_by_currency: by });
+        this.accounts.set(r.data);
+        this.isLoading.set(false);
+      },
       error: () => this.isLoading.set(false)
     });
   }

@@ -41,4 +41,16 @@ export class TransactionsService extends DataService {
   getByUser(userId: string): Observable<ApiResponse<Transaction[]>> {
     return this.get<ApiResponse<Transaction[]>>(`/transactions/${userId}`);
   }
+
+  create(payload: Partial<Transaction> & { user_id: string }): Observable<ApiResponse<Transaction>> {
+    return this.post<ApiResponse<Transaction>>('/transactions/', payload);
+  }
+
+  update(id: string, payload: Partial<Transaction>): Observable<ApiResponse<Transaction>> {
+    return this.patch<ApiResponse<Transaction>>(`/transactions/${id}`, payload);
+  }
+
+  remove(id: string): Observable<ApiResponse<{ deleted: string }>> {
+    return this.delete<ApiResponse<{ deleted: string }>>(`/transactions/${id}`);
+  }
 }

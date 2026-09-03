@@ -1,17 +1,19 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { InvestmentsService, Investment, InvestmentStats } from '../../../services/investments.service';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-investments-view',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   template: `
     <div class="flex flex-col gap-8 animate-in fade-in duration-700">
       <header class="flex justify-between items-end">
         <div class="flex flex-col gap-1">
           <h2 class="text-4xl font-black text-white tracking-tight">Inversiones</h2>
-          <p class="text-slate-400 font-medium">Portfolio global de inversiones</p>
+          <p class="text-slate-400 font-medium">Tu portfolio de inversiones</p>
         </div>
       </header>
 
@@ -43,7 +45,6 @@ import { InvestmentsService, Investment, InvestmentStats } from '../../../servic
           <table class="w-full">
             <thead>
               <tr class="text-left text-xs font-bold uppercase tracking-widest text-slate-500 border-b border-slate-700/50">
-                <th class="px-6 py-4">Usuario</th>
                 <th class="px-6 py-4">Nombre</th>
                 <th class="px-6 py-4">Símbolo</th>
                 <th class="px-6 py-4">Tipo</th>
@@ -54,7 +55,6 @@ import { InvestmentsService, Investment, InvestmentStats } from '../../../servic
             </thead>
             <tbody>
               <tr *ngFor="let inv of investments()" class="border-b border-slate-700/30 hover:bg-slate-700/20 transition-colors">
-                <td class="px-6 py-4 text-sm text-slate-400">{{ inv.user_email }}</td>
                 <td class="px-6 py-4 text-sm font-bold text-white">{{ inv.name }}</td>
                 <td class="px-6 py-4 text-xs text-indigo-400 font-bold">{{ inv.symbol || '—' }}</td>
                 <td class="px-6 py-4 text-sm text-slate-300">{{ inv.investment_type || '—' }}</td>
@@ -76,12 +76,26 @@ export class InvestmentsViewComponent implements OnInit {
   stats = signal<InvestmentStats | null>(null);
   isLoading = signal(true);
 
-  constructor(private svc: InvestmentsService) {}
+  constructor(private svc: InvestmentsService, private auth: AuthService) {}
 
   ngOnInit() {
-    this.svc.getStats().subscribe({ next: (r) => { if (r.success) this.stats.set(r.data); } });
-    this.svc.getAll().subscribe({
-      next: (r) => { if (r.success) this.investments.set(r.data); this.isLoading.set(false); },
+    const uid = this.auth.userId();
+    if (!uid) { this.isLoading.set(false); return; }
+    this.svc.getByUser(uid).subscribe({
+      next: (r) => {
+        if (!r.success) { this.isLoading.set(false); return; }
+        let invested = 0, current = 0;
+        for (const i of r.data) {
+          invested += Number(i.total_invested) || 0;
+          current += Number(i.total_current) || 0;
+        }
+        this.stats.set({
+          total_investments: r.data.length, total_invested: invested,
+          total_current_value: current, total_profit_loss: current - invested
+        });
+        this.investments.set(r.data);
+        this.isLoading.set(false);
+      },
       error: () => this.isLoading.set(false)
     });
   }

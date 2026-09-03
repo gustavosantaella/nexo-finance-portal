@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewChild, TemplateRef, AfterViewInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { AdminService, User } from '../../../services/admin.service';
 import { DataTableComponent, TableColumn } from '../../../shared/components/data-table/data-table.component';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
@@ -22,7 +23,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
           <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-indigo-400 transition-colors">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
           </div>
-          <input type="text" placeholder="Buscar por nombre o email..." 
+          <input type="text" placeholder="Buscar por nombre o email..." (input)="onSearch($event)"
                  class="w-full bg-slate-800/40 border border-slate-700/50 rounded-2xl py-3 pl-12 pr-4 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 backdrop-blur-sm transition-all shadow-lg shadow-black/20">
         </div>
       </header>
@@ -33,10 +34,19 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
       <!-- Processing Overlay for Actions -->
       <app-loading-spinner *ngIf="isProcessing()" [fullScreen]="true" [message]="processingMessage()"></app-loading-spinner>
 
-      <div *ngIf="!isLoading()" class="relative animate-in slide-in-from-bottom-4 duration-500">
+      <!-- Error State -->
+      <div *ngIf="!isLoading() && error()" class="bg-rose-500/10 border border-rose-500/30 rounded-2xl p-6 flex flex-col items-center gap-4">
+        <p class="text-rose-300 text-sm font-medium">No se pudo cargar la lista de usuarios.</p>
+        <p class="text-rose-400/70 text-xs italic">{{ error() }}</p>
+        <button (click)="loadUsers()" class="px-4 py-2 bg-rose-500/20 border border-rose-500/40 rounded-xl text-rose-200 text-xs font-bold hover:bg-rose-500/30 transition-all">
+          Reintentar
+        </button>
+      </div>
+
+      <div *ngIf="!isLoading() && !error()" class="relative animate-in slide-in-from-bottom-4 duration-500">
         <app-data-table 
           [columns]="columns" 
-          [tableData]="users()" 
+          [tableData]="filteredUsers()" 
           [hasActions]="true"
           [columnTemplates]="templateMap"
           [actionsTemplate]="actionsTemplate">
@@ -58,7 +68,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
       <ng-template #userTemplate let-user>
         <div class="flex items-center gap-3">
           <div class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center text-xs font-black text-indigo-400 border border-indigo-500/30">
-            {{ user.full_name.charAt(0).toUpperCase() }}
+            {{ initial(user) }}
           </div>
           <div class="flex flex-col">
             <span class="font-bold text-white tracking-tight">{{ user.full_name }}</span>
@@ -96,6 +106,9 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 
       <ng-template #actionsTemplate let-user>
         <div class="flex gap-2 justify-end mr-2">
+          <button (click)="viewUser(user)" class="p-2 text-slate-400 hover:text-sky-400 hover:bg-sky-400/10 rounded-xl transition-all duration-200 group" title="Ver datos del usuario">
+            <svg class="w-5 h-5 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+          </button>
           <button *ngIf="!user.is_verified" (click)="verifyUser(user)" class="p-2 text-slate-400 hover:text-emerald-400 hover:bg-emerald-400/10 rounded-xl transition-all duration-200 group" title="Verificar Manualmente">
             <svg class="w-5 h-5 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           </button>
@@ -123,6 +136,8 @@ export class UserManagementComponent implements OnInit, AfterViewInit {
   isLoading = signal<boolean>(true);
   isProcessing = signal<boolean>(false);
   processingMessage = signal<string>('');
+  error = signal<string | null>(null);
+  searchQuery = '';
 
   columns: TableColumn[] = [
     { key: 'full_name', label: 'Usuario' },
@@ -142,7 +157,10 @@ export class UserManagementComponent implements OnInit, AfterViewInit {
     action: () => { }
   });
 
-  constructor(private adminService: AdminService) { }
+  constructor(
+    private adminService: AdminService,
+    private router: Router
+  ) { }
 
   ngOnInit() {
     this.loadUsers();
@@ -160,25 +178,50 @@ export class UserManagementComponent implements OnInit, AfterViewInit {
 
   loadUsers() {
     this.isLoading.set(true);
-    console.log('UserManagement: Iniciando carga de usuarios...');
+    this.error.set(null);
     this.adminService.getUsers().subscribe({
       next: (res) => {
-        console.log('UserManagement: Respuesta recibida:', res);
         if (res && res.success) {
           this.users.set([...res.data]);
+        } else {
+          this.error.set(res?.error || 'Respuesta inesperada del servidor.');
         }
         this.isLoading.set(false);
       },
       error: (err) => {
-        console.error('UserManagement: Error cargando usuarios:', err);
+        this.error.set(err?.message || 'Error de conexión con el servidor.');
         this.isLoading.set(false);
       }
     });
   }
 
+  onSearch(event: Event): void {
+    this.searchQuery = (event.target as HTMLInputElement).value.trim().toLowerCase();
+    this.users.update(list => [...list]); // dispara recálculo de filteredUsers
+  }
+
+  filteredUsers(): User[] {
+    const q = this.searchQuery;
+    if (!q) return this.users();
+    return this.users().filter(u =>
+      (u.full_name || '').toLowerCase().includes(q) ||
+      (u.email || '').toLowerCase().includes(q)
+    );
+  }
+
   formatDate(dateStr: string | null): string {
     if (!dateStr) return 'Nunca';
     return new Date(dateStr).toLocaleDateString();
+  }
+
+  initial(user: User): string {
+    const name = (user.full_name || '').trim();
+    if (name.length > 0) return name.charAt(0).toUpperCase();
+    return (user.email || '?').charAt(0).toUpperCase();
+  }
+
+  viewUser(user: User) {
+    this.router.navigate(['/admin', 'users', user.id]);
   }
 
   closeModal() {

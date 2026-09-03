@@ -5,8 +5,10 @@ import { LoginComponent } from './components/auth/login.component';
 import { RegisterComponent } from './components/auth/register.component';
 import { SupportComponent } from './components/support/support.component';
 import { FaqComponent } from './components/faq/faq.component';
-import { AdminDashboardComponent, AdminHomeComponent } from './modules/admin-dashboard/admin-dashboard.component';
+import { AdminDashboardComponent } from './modules/admin-dashboard/admin-dashboard.component';
+import { PortalOverviewComponent } from './modules/admin-dashboard/overview/portal-overview.component';
 import { UserManagementComponent } from './modules/admin-dashboard/user-management/user-management.component';
+import { UserDetailComponent } from './modules/admin-dashboard/user-detail/user-detail.component';
 import { TransactionsViewComponent } from './modules/admin-dashboard/transactions/transactions-view.component';
 import { AccountsViewComponent } from './modules/admin-dashboard/accounts/accounts-view.component';
 import { BudgetsViewComponent } from './modules/admin-dashboard/budgets/budgets-view.component';
@@ -35,8 +37,9 @@ export const routes: Routes = [
     component: AdminDashboardComponent,
     canActivate: [adminGuard],
     children: [
-      { path: '', component: AdminHomeComponent },
+      { path: '', component: PortalOverviewComponent },
       { path: 'users', component: UserManagementComponent },
+      { path: 'users/:id', component: UserDetailComponent },
       { path: 'transactions', component: TransactionsViewComponent },
       { path: 'accounts', component: AccountsViewComponent },
       { path: 'budgets', component: BudgetsViewComponent },

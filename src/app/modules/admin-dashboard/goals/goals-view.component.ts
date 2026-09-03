@@ -1,17 +1,19 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { GoalsService, Goal, GoalStats } from '../../../services/goals.service';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-goals-view',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   template: `
     <div class="flex flex-col gap-8 animate-in fade-in duration-700">
       <header class="flex justify-between items-end">
         <div class="flex flex-col gap-1">
           <h2 class="text-4xl font-black text-white tracking-tight">Metas Financieras</h2>
-          <p class="text-slate-400 font-medium">Objetivos de ahorro de todos los usuarios</p>
+          <p class="text-slate-400 font-medium">Tus objetivos de ahorro</p>
         </div>
       </header>
 
@@ -50,7 +52,6 @@ import { GoalsService, Goal, GoalStats } from '../../../services/goals.service';
                 [style.width.%]="getProgress(g)"></div>
             </div>
           </div>
-          <p class="text-xs text-slate-500">{{ g.user_email }}</p>
           <p class="text-xs text-slate-500 mt-1" *ngIf="g.deadline">Vence: {{ g.deadline | date:'dd/MM/yyyy' }}</p>
         </div>
       </div>
@@ -68,12 +69,27 @@ export class GoalsViewComponent implements OnInit {
     return Math.min(100, (g.current_amount / g.target_amount) * 100);
   }
 
-  constructor(private svc: GoalsService) {}
+  constructor(private svc: GoalsService, private auth: AuthService) {}
 
   ngOnInit() {
-    this.svc.getStats().subscribe({ next: (r) => { if (r.success) this.stats.set(r.data); } });
-    this.svc.getAll().subscribe({
-      next: (r) => { if (r.success) this.goals.set(r.data); this.isLoading.set(false); },
+    const uid = this.auth.userId();
+    if (!uid) { this.isLoading.set(false); return; }
+    this.svc.getByUser(uid).subscribe({
+      next: (r) => {
+        if (!r.success) { this.isLoading.set(false); return; }
+        let target = 0, saved = 0, completed = 0;
+        for (const g of r.data) {
+          target += Number(g.target_amount) || 0;
+          saved += Number(g.current_amount) || 0;
+          if ((Number(g.current_amount) || 0) >= (Number(g.target_amount) || 1)) completed++;
+        }
+        this.stats.set({
+          total_goals: r.data.length, completed_goals: completed,
+          in_progress_goals: r.data.length - completed, total_target: target, total_saved: saved
+        });
+        this.goals.set(r.data);
+        this.isLoading.set(false);
+      },
       error: () => this.isLoading.set(false)
     });
   }

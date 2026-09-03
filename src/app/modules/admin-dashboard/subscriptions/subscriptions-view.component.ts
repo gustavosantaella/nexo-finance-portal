@@ -1,11 +1,13 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { SubscriptionsAdminService, PlanSubscription, UserSubscription } from '../../../services/subscriptions-admin.service';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-subscriptions-view',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   template: `
     <div class="flex flex-col gap-8 animate-in fade-in duration-700">
       <header>
@@ -22,7 +24,6 @@ import { SubscriptionsAdminService, PlanSubscription, UserSubscription } from '.
             <table class="w-full">
               <thead>
                 <tr class="text-left text-xs font-bold uppercase tracking-widest text-slate-500 border-b border-slate-700/50">
-                  <th class="px-6 py-4">Usuario</th>
                   <th class="px-6 py-4">Plan</th>
                   <th class="px-6 py-4">Estado</th>
                   <th class="px-6 py-4">Vence</th>
@@ -30,7 +31,6 @@ import { SubscriptionsAdminService, PlanSubscription, UserSubscription } from '.
               </thead>
               <tbody>
                 <tr *ngFor="let p of planSubs()" class="border-b border-slate-700/30 hover:bg-slate-700/20 transition-colors">
-                  <td class="px-6 py-4 text-sm text-slate-400">{{ p.user_email }}</td>
                   <td class="px-6 py-4">
                     <span class="text-xs font-bold px-2 py-1 rounded-lg"
                       [class]="p.plan_label?.toLowerCase() === 'premium' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-slate-500/10 text-slate-400 border border-slate-500/20'">
@@ -60,7 +60,6 @@ import { SubscriptionsAdminService, PlanSubscription, UserSubscription } from '.
             <table class="w-full">
               <thead>
                 <tr class="text-left text-xs font-bold uppercase tracking-widest text-slate-500 border-b border-slate-700/50">
-                  <th class="px-6 py-4">Usuario</th>
                   <th class="px-6 py-4">Servicio</th>
                   <th class="px-6 py-4">Ciclo</th>
                   <th class="px-6 py-4">Monto</th>
@@ -69,7 +68,6 @@ import { SubscriptionsAdminService, PlanSubscription, UserSubscription } from '.
               </thead>
               <tbody>
                 <tr *ngFor="let s of userSubs()" class="border-b border-slate-700/30 hover:bg-slate-700/20 transition-colors">
-                  <td class="px-6 py-4 text-sm text-slate-400">{{ s.user_email }}</td>
                   <td class="px-6 py-4 text-sm font-bold text-white">{{ s.name }}</td>
                   <td class="px-6 py-4 text-sm text-slate-300">{{ s.billing_cycle }}</td>
                   <td class="px-6 py-4 text-sm font-bold text-indigo-400">{{ s.currency }} {{ s.amount | number:'1.2-2' }}</td>
@@ -89,15 +87,18 @@ export class SubscriptionsViewComponent implements OnInit {
   isLoading = signal(true);
   isLoadingPlans = signal(true);
 
-  constructor(private svc: SubscriptionsAdminService) {}
+  constructor(private svc: SubscriptionsAdminService, private auth: AuthService) {}
 
   ngOnInit() {
-    this.svc.getAllUserSubscriptions().subscribe({
+    const uid = this.auth.userId();
+    if (!uid) { this.isLoading.set(false); this.isLoadingPlans.set(false); return; }
+    this.svc.getByUser(uid).subscribe({
       next: (r) => { if (r.success) this.userSubs.set(r.data); this.isLoading.set(false); },
       error: () => this.isLoading.set(false)
     });
+    // Solo el plan de MI cuenta (se filtra localmente).
     this.svc.getPlanSubscriptions().subscribe({
-      next: (r) => { if (r.success) this.planSubs.set(r.data); this.isLoadingPlans.set(false); },
+      next: (r) => { if (r.success) this.planSubs.set(r.data.filter(p => p.user_id === uid)); this.isLoadingPlans.set(false); },
       error: () => this.isLoadingPlans.set(false)
     });
   }

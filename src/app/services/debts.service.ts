@@ -41,4 +41,24 @@ export class DebtsService extends DataService {
   getByUser(userId: string): Observable<ApiResponse<Debt[]>> {
     return this.get<ApiResponse<Debt[]>>(`/debts/${userId}`);
   }
+
+  create(payload: Partial<Debt> & { user_id: string }): Observable<ApiResponse<Debt>> {
+    return this.post<ApiResponse<Debt>>('/debts/', payload);
+  }
+
+  addPayment(debtId: string, payload: { amount: number; note?: string; account_name?: string; user_id: string }): Observable<ApiResponse<{ fully_paid: boolean; remaining: number; status: string }>> {
+    return this.post<ApiResponse<{ fully_paid: boolean; remaining: number; status: string }>>(`/debts/${debtId}/payments`, payload);
+  }
+
+  applyInterest(debtId: string): Observable<ApiResponse<{ penalty: number }>> {
+    return this.post<ApiResponse<{ penalty: number }>>(`/debts/${debtId}/interest`, {});
+  }
+
+  getPayments(debtId: string): Observable<ApiResponse<any[]>> {
+    return this.get<ApiResponse<any[]>>(`/debts/${debtId}/payments`);
+  }
+
+  remove(debtId: string): Observable<ApiResponse<{ deleted: string }>> {
+    return this.delete<ApiResponse<{ deleted: string }>>(`/debts/${debtId}`);
+  }
 }

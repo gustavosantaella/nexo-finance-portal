@@ -1,0 +1,120 @@
+<div class="flex flex-col gap-8 animate-in fade-in duration-700">
+  <header class="flex flex-col gap-2">
+    <h2 class="text-4xl font-black text-white tracking-tight">Dashboard</h2>
+    <p class="text-slate-400 font-medium italic">Indicadores reales de todos los módulos</p>
+  </header>
+
+  <app-loading-spinner *ngIf="isLoading()" message="Cargando tus módulos..."></app-loading-spinner>
+
+  <div *ngIf="!isLoading() && error()" class="bg-rose-500/10 border border-rose-500/30 rounded-3xl p-6 text-rose-300">
+    {{ error() }}
+  </div>
+
+  <ng-container *ngIf="!isLoading() && !error()">
+    <!-- KPI grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="bg-slate-800/40 backdrop-blur-xl rounded-3xl border border-slate-700/50 p-6">
+        <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Mi cuenta</p>
+        <p class="text-xl font-black text-white mt-2 break-all">{{ myEmail() }}</p>
+        <p class="text-xs text-emerald-400 font-bold mt-1">Sesión iniciada</p>
+      </div>
+
+      <div class="bg-slate-800/40 backdrop-blur-xl rounded-3xl border border-slate-700/50 p-6">
+        <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Cuentas</p>
+        <p class="text-4xl font-black text-white mt-2">{{ accounts()?.total_accounts ?? 0 }}</p>
+        <p class="text-xs text-emerald-400 font-bold mt-1">{{ currenciesCount() }} monedas</p>
+      </div>
+
+      <div class="bg-slate-800/40 backdrop-blur-xl rounded-3xl border border-slate-700/50 p-6">
+        <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Deudas pendientes</p>
+        <p class="text-4xl font-black text-amber-400 mt-2">{{ debts()?.pending_count ?? 0 }}</p>
+        <p class="text-xs text-slate-400 font-bold mt-1">Yo debo: ${{ fmt(debts()?.i_owe_pending ?? 0) }}</p>
+      </div>
+
+      <div class="bg-slate-800/40 backdrop-blur-xl rounded-3xl border border-slate-700/50 p-6">
+        <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Transacciones</p>
+        <p class="text-4xl font-black text-white mt-2">{{ transactions()?.total_transactions ?? 0 }}</p>
+        <p class="text-xs text-emerald-400 font-bold mt-1">+${{ fmt(transactions()?.current_income ?? 0) }} mes</p>
+        <p class="text-xs text-rose-400 font-bold">-${{ fmt(transactions()?.current_expense ?? 0) }} mes</p>
+      </div>
+
+      <div class="bg-slate-800/40 backdrop-blur-xl rounded-3xl border border-slate-700/50 p-6">
+        <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Metas</p>
+        <p class="text-4xl font-black text-white mt-2">{{ goals()?.total_goals ?? 0 }}</p>
+        <p class="text-xs text-emerald-400 font-bold mt-1">{{ goals()?.in_progress_goals ?? 0 }} en progreso</p>
+      </div>
+
+      <div class="bg-slate-800/40 backdrop-blur-xl rounded-3xl border border-slate-700/50 p-6">
+        <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Presupuestos</p>
+        <p class="text-4xl font-black text-white mt-2">{{ budgets()?.active_budgets ?? 0 }}</p>
+        <p class="text-xs text-slate-400 font-bold mt-1">Ejecutado ${{ fmt(budgets()?.total_executed ?? 0) }}</p>
+      </div>
+
+      <div class="bg-slate-800/40 backdrop-blur-xl rounded-3xl border border-slate-700/50 p-6">
+        <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Inversiones</p>
+        <p class="text-4xl font-black text-white mt-2">{{ investments()?.total_investments ?? 0 }}</p>
+        <p class="text-xs font-bold mt-1" [class]="(investments()?.total_profit_loss ?? 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'">
+          {{ (investments()?.total_profit_loss ?? 0) >= 0 ? '+' : '' }}${{ fmt(investments()?.total_profit_loss ?? 0) }}
+        </p>
+      </div>
+
+      <div class="bg-slate-800/40 backdrop-blur-xl rounded-3xl border border-slate-700/50 p-6">
+        <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Suscripciones</p>
+        <p class="text-4xl font-black text-white mt-2">{{ subscriptions().length }}</p>
+        <p class="text-xs text-indigo-400 font-bold mt-1">${{ fmt(subscriptionMonthly()) }}/mes</p>
+      </div>
+    </div>
+
+    <!-- Charts row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+      <!-- Income vs expense -->
+      <div class="bg-slate-800/40 backdrop-blur-xl rounded-3xl border border-slate-700/50 p-8">
+        <h3 class="text-lg font-black text-white mb-6">Ingresos vs Egresos</h3>
+        <div class="flex flex-col gap-6">
+          <div>
+            <div class="flex justify-between text-xs text-slate-400 font-bold mb-2">
+              <span>Mes actual</span>
+              <span>+${{ fmt(transactions()?.current_income ?? 0) }} / -${{ fmt(transactions()?.current_expense ?? 0) }}</span>
+            </div>
+            <div class="flex h-4 rounded-full overflow-hidden bg-slate-700/40">
+              <div class="bg-emerald-500 h-full transition-all duration-700" [style.width.%]="incomePct()"></div>
+              <div class="bg-rose-500 h-full transition-all duration-700" [style.width.%]="expensePct()"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between text-xs text-slate-400 font-bold mb-2">
+              <span>Mes anterior</span>
+              <span>+${{ fmt(transactions()?.prev_income ?? 0) }} / -${{ fmt(transactions()?.prev_expense ?? 0) }}</span>
+            </div>
+            <div class="flex h-4 rounded-full overflow-hidden bg-slate-700/40">
+              <div class="bg-emerald-500/70 h-full transition-all duration-700" [style.width.%]="prevIncomePct()"></div>
+              <div class="bg-rose-500/70 h-full transition-all duration-700" [style.width.%]="prevExpensePct()"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Balance by currency -->
+      <div class="bg-slate-800/40 backdrop-blur-xl rounded-3xl border border-slate-700/50 p-8">
+        <h3 class="text-lg font-black text-white mb-6">Saldo por moneda</h3>
+        <div class="flex flex-col gap-4">
+          <ng-container *ngFor="let item of currencyBars()">
+            <div>
+              <div class="flex justify-between text-xs text-slate-400 font-bold mb-1">
+                <span>{{ item.currency }}</span>
+                <span>${{ fmt(item.balance) }}</span>
+              </div>
+              <div class="h-3 rounded-full bg-slate-700/40 overflow-hidden">
+                <div class="h-full rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-700"
+                     [style.width.%]="barWidth(item.balance)"></div>
+              </div>
+            </div>
+          </ng-container>
+          <p *ngIf="currencyBars().length === 0" class="text-sm text-slate-500 italic">Sin cuentas registradas.</p>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>
+

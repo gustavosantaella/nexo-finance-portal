@@ -1,11 +1,13 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { BudgetsService, Budget, BudgetStats } from '../../../services/budgets.service';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-budgets-view',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   template: `
     <div class="flex flex-col gap-8 animate-in fade-in duration-700">
       <header class="flex justify-between items-end">
@@ -41,7 +43,6 @@ import { BudgetsService, Budget, BudgetStats } from '../../../services/budgets.s
           <table class="w-full">
             <thead>
               <tr class="text-left text-xs font-bold uppercase tracking-widest text-slate-500 border-b border-slate-700/50">
-                <th class="px-6 py-4">Usuario</th>
                 <th class="px-6 py-4">Título</th>
                 <th class="px-6 py-4">Categoría</th>
                 <th class="px-6 py-4">Monto</th>
@@ -52,7 +53,6 @@ import { BudgetsService, Budget, BudgetStats } from '../../../services/budgets.s
             </thead>
             <tbody>
               <tr *ngFor="let b of budgets()" class="border-b border-slate-700/30 hover:bg-slate-700/20 transition-colors">
-                <td class="px-6 py-4 text-sm text-slate-400">{{ b.user_email }}</td>
                 <td class="px-6 py-4 text-sm font-bold text-white">{{ b.title }}</td>
                 <td class="px-6 py-4 text-sm text-slate-300">{{ b.category || '—' }}</td>
                 <td class="px-6 py-4 text-sm text-slate-300">{{ b.currency_symbol }}{{ b.amount | number:'1.2-2' }}</td>
@@ -86,12 +86,28 @@ export class BudgetsViewComponent implements OnInit {
     return Math.min(100, (b.executed_amount / b.amount) * 100);
   }
 
-  constructor(private svc: BudgetsService) {}
+  constructor(private svc: BudgetsService, private auth: AuthService) {}
 
   ngOnInit() {
-    this.svc.getStats().subscribe({ next: (r) => { if (r.success) this.stats.set(r.data); } });
-    this.svc.getAll().subscribe({
-      next: (r) => { if (r.success) this.budgets.set(r.data); this.isLoading.set(false); },
+    const uid = this.auth.userId();
+    if (!uid) { this.isLoading.set(false); return; }
+    this.svc.getByUser(uid).subscribe({
+      next: (r) => {
+        if (!r.success) { this.isLoading.set(false); return; }
+        let active = 0, completed = 0, budgeted = 0, executed = 0;
+        for (const b of r.data) {
+          if (b.status === 'active') active++;
+          if (b.status === 'completed') completed++;
+          budgeted += Number(b.amount) || 0;
+          executed += Number(b.executed_amount) || 0;
+        }
+        this.stats.set({
+          total_budgets: r.data.length, active_budgets: active, completed_budgets: completed,
+          total_budgeted: budgeted, total_executed: executed
+        });
+        this.budgets.set(r.data);
+        this.isLoading.set(false);
+      },
       error: () => this.isLoading.set(false)
     });
   }

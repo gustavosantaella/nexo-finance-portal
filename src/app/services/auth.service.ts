@@ -29,6 +29,12 @@ export class AuthService {
                 if (res.access_token) {
                     localStorage.setItem('nexo_token', res.access_token);
                     localStorage.setItem('nexo_is_admin', res.user?.is_admin ? 'true' : 'false');
+                    if (res.user?.id) {
+                        localStorage.setItem('nexo_user_id', res.user.id);
+                    }
+                    if (res.user?.email) {
+                        localStorage.setItem('nexo_user_email', res.user.email);
+                    }
                 }
             })
         );
@@ -37,7 +43,18 @@ export class AuthService {
     logout() {
         localStorage.removeItem('nexo_token');
         localStorage.removeItem('nexo_is_admin');
+        localStorage.removeItem('nexo_user_id');
+        localStorage.removeItem('nexo_user_email');
         localStorage.removeItem('nexo_consent_given');
+    }
+
+    /** Identificador del usuario logueado (la "mi cuenta" que verán los módulos). */
+    userId(): string | null {
+        return localStorage.getItem('nexo_user_id');
+    }
+
+    userEmail(): string | null {
+        return localStorage.getItem('nexo_user_email');
     }
 
     isAdmin(): boolean {

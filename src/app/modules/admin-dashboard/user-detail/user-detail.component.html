@@ -1,0 +1,128 @@
+<div class="flex flex-col gap-8 animate-in fade-in duration-700">
+  <header class="flex items-center gap-4">
+    <a routerLink="/admin/users" class="p-2 rounded-xl bg-slate-800/40 border border-slate-700/50 text-slate-300 hover:text-white hover:border-indigo-500/50 transition-all">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+    </a>
+    <div class="flex flex-col">
+      <h2 class="text-3xl font-black text-white tracking-tight">Datos del usuario</h2>
+      <p class="text-slate-400 font-medium italic text-sm">Información financiera de una cuenta específica</p>
+    </div>
+  </header>
+
+  <app-loading-spinner *ngIf="isLoading()" message="Cargando datos del usuario..."></app-loading-spinner>
+
+  <div *ngIf="!isLoading() && error()" class="bg-rose-500/10 border border-rose-500/30 rounded-3xl p-6 text-rose-300">
+    {{ error() }}
+  </div>
+
+  <ng-container *ngIf="!isLoading() && user()">
+    <!-- User card -->
+    <div class="bg-slate-800/40 backdrop-blur-xl rounded-3xl border border-slate-700/50 p-8 flex flex-col md:flex-row md:items-center gap-6">
+      <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-2xl font-black text-white shadow-lg shadow-indigo-500/20">
+        {{ initial() }}
+      </div>
+      <div class="flex-1">
+        <h3 class="text-2xl font-black text-white">{{ user()?.full_name }}</h3>
+        <p class="text-slate-400 text-sm italic">{{ user()?.email }}</p>
+        <div class="flex gap-2 mt-3">
+          <span *ngIf="user()?.is_admin" class="px-2 py-0.5 bg-indigo-500/10 text-indigo-400 text-[10px] font-black rounded-full border border-indigo-500/20 uppercase">Admin</span>
+          <span [class]="user()?.is_verified ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'"
+                class="px-2 py-0.5 text-[10px] font-black rounded-full border uppercase">
+            {{ user()?.is_verified ? 'Verificado' : 'Pendiente' }}
+          </span>
+          <span class="px-2 py-0.5 bg-slate-700/40 text-slate-400 text-[10px] font-black rounded-full border border-slate-700/50 uppercase">
+            Registrado: {{ fmtDate(user()?.created_at) }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary tiles -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="bg-slate-800/40 backdrop-blur-xl rounded-3xl border border-slate-700/50 p-6">
+        <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Cuentas</p>
+        <p class="text-3xl font-black text-white mt-2">{{ accounts().length }}</p>
+        <p class="text-xs text-emerald-400 font-bold mt-1">${{ fmt(balanceTotal()) }}</p>
+      </div>
+      <div class="bg-slate-800/40 backdrop-blur-xl rounded-3xl border border-slate-700/50 p-6">
+        <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Transacciones</p>
+        <p class="text-3xl font-black text-white mt-2">{{ transactions().length }}</p>
+      </div>
+      <div class="bg-slate-800/40 backdrop-blur-xl rounded-3xl border border-slate-700/50 p-6">
+        <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Deudas pendientes</p>
+        <p class="text-3xl font-black text-amber-400 mt-2">{{ pendingDebts().length }}</p>
+        <p class="text-xs text-amber-400/80 font-bold mt-1">${{ fmt(outstandingDebtTotal()) }}</p>
+      </div>
+      <div class="bg-slate-800/40 backdrop-blur-xl rounded-3xl border border-slate-700/50 p-6">
+        <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Inversiones</p>
+        <p class="text-3xl font-black text-white mt-2">{{ investments().length }}</p>
+        <p class="text-xs text-indigo-400 font-bold mt-1">${{ fmt(investedTotal()) }}</p>
+      </div>
+    </div>
+
+    <!-- Modules counts -->
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <div class="bg-slate-800/20 rounded-2xl border border-slate-700/40 p-4">
+        <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Metas</p>
+        <p class="text-xl font-black text-white mt-1">{{ goals().length }}</p>
+      </div>
+      <div class="bg-slate-800/20 rounded-2xl border border-slate-700/40 p-4">
+        <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Presupuestos</p>
+        <p class="text-xl font-black text-white mt-1">{{ budgets().length }}</p>
+      </div>
+      <div class="bg-slate-800/20 rounded-2xl border border-slate-700/40 p-4">
+        <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Transferencias</p>
+        <p class="text-xl font-black text-white mt-1">{{ transfers().length }}</p>
+      </div>
+      <div class="bg-slate-800/20 rounded-2xl border border-slate-700/40 p-4">
+        <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Suscripciones</p>
+        <p class="text-xl font-black text-white mt-1">{{ subscriptions().length }}</p>
+      </div>
+      <div class="bg-slate-800/20 rounded-2xl border border-slate-700/40 p-4">
+        <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Inversiones (total)</p>
+        <p class="text-xl font-black text-white mt-1">${{ fmt(investedTotal()) }}</p>
+      </div>
+    </div>
+
+    <!-- Details -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <div class="bg-slate-800/40 backdrop-blur-xl rounded-3xl border border-slate-700/50 p-6">
+        <h4 class="text-lg font-black text-white mb-4">Cuentas</h4>
+        <div *ngIf="accounts().length === 0" class="text-sm text-slate-500 italic">Sin cuentas.</div>
+        <div *ngFor="let a of accounts()" class="flex items-center justify-between py-2 border-b border-slate-700/40 last:border-0">
+          <span class="font-bold text-slate-200">{{ a.name }}</span>
+          <span class="text-sm font-black text-emerald-400">${{ fmt(a.balance) }} <span class="text-slate-500">{{ a.currency }}</span></span>
+        </div>
+      </div>
+
+      <div class="bg-slate-800/40 backdrop-blur-xl rounded-3xl border border-slate-700/50 p-6">
+        <h4 class="text-lg font-black text-white mb-4">Deudas pendientes</h4>
+        <div *ngIf="pendingDebts().length === 0" class="text-sm text-slate-500 italic">Sin deudas pendientes.</div>
+        <div *ngFor="let d of pendingDebts()" class="flex items-center justify-between py-2 border-b border-slate-700/40 last:border-0">
+          <div class="flex flex-col">
+            <span class="font-bold text-slate-200">{{ d.title }}</span>
+            <span class="text-[10px] text-slate-500 uppercase">{{ d.type === 'I_OWE' ? 'Yo debo' : 'Me deben' }}</span>
+          </div>
+          <span class="text-sm font-black text-amber-400">${{ fmt(debtRemaining(d)) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent transactions -->
+    <div class="bg-slate-800/40 backdrop-blur-xl rounded-3xl border border-slate-700/50 p-6">
+      <h4 class="text-lg font-black text-white mb-4">Transacciones recientes</h4>
+      <div *ngIf="transactions().length === 0" class="text-sm text-slate-500 italic">Sin transacciones.</div>
+      <div *ngFor="let t of transactions().slice(0, 8)" class="flex items-center justify-between py-2 border-b border-slate-700/40 last:border-0">
+        <div class="flex flex-col">
+          <span class="font-bold text-slate-200">{{ t.title }}</span>
+          <span class="text-[10px] text-slate-500">{{ t.category }} · {{ t.account }} · {{ fmtDate(t.date) }}</span>
+        </div>
+        <span [class]="t.is_expense ? 'text-rose-400' : 'text-emerald-400'" class="text-sm font-black">
+          {{ t.is_expense ? '-' : '+' }}${{ fmt(t.amount) }}
+        </span>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
